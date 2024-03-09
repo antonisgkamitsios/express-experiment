@@ -19,10 +19,10 @@ export default defineWorkspace([
     extends: './vite.config.ts',
     test: {
       include: ['spec/unit/**/*.spec.{ts,tsx}'],
+      exclude: ['spec/client/**/*.spec.{ts,tsx}'],
       name: 'unit node',
       environment: 'node',
       setupFiles: ['src/test/helpers/unit.setup.ts'],
-      alias:  {mockPrisma: '/src/test/helpers/mockedPrisma.ts'}
     }
   },
   // integration specs

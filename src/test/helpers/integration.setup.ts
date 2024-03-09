@@ -5,10 +5,10 @@ import request from 'supertest';
 beforeAll(async () => {
   const app = await createApp();
   const testRequest = request(app);
-  global.testRequest = testRequest
-  
+  global.testRequest = testRequest;
 });
 
-beforeEach(async () => {
+afterEach(async () => {
   await resetDb();
 });
+
