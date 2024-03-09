@@ -15,3 +15,8 @@ declare module 'express-session' {
     userId?: string;
   }
 }
+declare global {
+  interface globalThis {
+    customGlobalProperty: string;
+  }
+}

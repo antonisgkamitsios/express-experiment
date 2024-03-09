@@ -18,6 +18,10 @@ export async function login(req: Request, res: Response) {
     return;
   }
 
+  const testUsers = await prisma.user.count()
+  console.log('uers: ', testUsers);
+  
+
   const user = await prisma.user.findFirst({ where: { username: { equals: username } } });
   if (!user) {
     res.status(400).send('username or password wrong');

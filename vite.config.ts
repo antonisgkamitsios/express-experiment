@@ -5,14 +5,19 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
-  test:{
+  test: {
     globals: true
   },
   build: {
     outDir: 'dist',
-    target: 'esnext',
+    target: 'esnext'
   },
   ssr: {
-    noExternal: ['react-helmet-async'],
+    noExternal: ['react-helmet-async']
   },
+  server: {
+    hmr: {
+      port: 3005
+    }
+  }
 });

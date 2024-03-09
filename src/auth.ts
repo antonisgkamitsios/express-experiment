@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import crypto from 'crypto';
 import * as bcrypt from 'bcrypt';
 
-import prisma  from './db.ts';
-import { User } from '@prisma/client';
+import prisma from './db.ts';
+import { Prisma, User } from '@prisma/client';
 
 function generateToken() {
   return crypto.randomUUID();
@@ -64,4 +64,8 @@ export async function currentUser(req: Request, _res: Response, next: NextFuncti
   }
   req.currentUser = currentUser;
   next();
+}
+
+export async function createUser(user: Prisma.UserCreateInput) {
+  return await prisma.user.create({ data: user });
 }
