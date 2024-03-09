@@ -2,6 +2,13 @@ import { Request, Response } from 'express';
 import { hashString, comparePassword, persistUser, remember, forget } from '../auth.ts';
 import prisma from '../db.ts';
 
+import { body, validationResult } from 'express-validator';
+import { validate } from '@/validators/validate.ts';
+
+export const loginValidator = validate([
+  body('username', 'username cannot be empty').not().isEmpty(),
+  body('password', 'password cannot be empty').not().isEmpty()
+]);
 export async function login(req: Request, res: Response) {
   const username = req.body.username;
   const password = req.body.password;
@@ -13,14 +20,8 @@ export async function login(req: Request, res: Response) {
     return;
   }
 
-  if (!username || !password) {
-    res.status(400).send('oops');
-    return;
-  }
-
-  const testUsers = await prisma.user.count()
+  const testUsers = await prisma.user.count();
   console.log('uers: ', testUsers);
-  
 
   const user = await prisma.user.findFirst({ where: { username: { equals: username } } });
   if (!user) {
@@ -40,27 +41,25 @@ export async function login(req: Request, res: Response) {
   }
 }
 
+export const registerValidator = validate([
+  body('username', 'username cannot be empty').not().isEmpty(),
+  body('password', 'password cannot be empty').not().isEmpty(),
+  body('password', 'password length must be greater than 8 characters').isLength({ min: 8 }),
+  body('passwordRepeat', 'passwords do not match').custom((value, { req }) => value === req.body.password),
+  body('username', 'user with this username already exists').custom(async (value, { req }) => {
+    const errors = validationResult(req);
+    if (errors.isEmpty()) {
+      const user = await prisma.user.findFirst({ where: { username: { equals: value } } });
+      if (user) {
+        throw new Error('Username already in use');
+      }
+    }
+  })
+]);
+
 export async function register(req: Request, res: Response) {
   const username = req.body.username;
   const password = req.body.password;
-  const passwordRepeat = req.body.passwordRepeat;
-
-  if (!username || !password || !passwordRepeat) {
-    res.status(400).end('add fields noob');
-    return;
-  }
-
-  if (password !== passwordRepeat) {
-    res.status(400).send('passwords dont match');
-    return;
-  }
-  const user = await prisma.user.findFirst({ where: { username: { equals: username } } });
-  console.log(user);
-
-  if (user) {
-    res.status(400).send('user already exist');
-    return;
-  }
 
   try {
     const hashedPassword = await hashString(password);
