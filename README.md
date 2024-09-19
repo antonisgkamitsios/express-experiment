@@ -1,30 +1,18 @@
-# React + TypeScript + Vite
+# This is a demo with vite vitest express prisma and ssr react
+### I have tried to create an express server which will serve both some json amd some react with ssr
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This dummy app contains authentication which is done by registering a user (storing him in the db) and then allowing him to log in which is done by creating a session for that user. We also allow a remember me option which will keep the user logged in even if the user closes the browser.
 
-Currently, two official plugins are available:
+The way I achieve the remember me functionality is by
+- generating a random token
+- storing this token in a cookie with the user's id
+- hashing this token and storing the hashed token in the db
+- every time a request hits our server we check if it has a cookie with the user id and if it has we retrieve this user from the db.
+ Then we compare the cookie token with the user's hashed token (which is stored in the db) to verify that he is the correct user and if so we create a session for that user. For subsequent request if we find a session we just retrieve him for the db (to verify that the user is not deleted or whatever) and then at the end storing the current user in th request object
+All the juice for authentication is happening at the `src/handlers/authHandler.t`s and the `src/auth.ts`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+ For react ssr i have done some work for serving with splitting my `index.html` in chunks. I start rendering up to the part of `<!--app-html-->`, then   rendering our react app wrapped  with  `StaticRouter` as a pipeable stream and after it finishes continuing streaming the rest of the html which contains the client side js entry point `/src/client/entry-client.tsx` Inside there we hydrate the dom rendering our app wrapped inside a `BrowserRouter`. 
 
-## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+I have done some work with testing to truncate the tables before each test as well
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list

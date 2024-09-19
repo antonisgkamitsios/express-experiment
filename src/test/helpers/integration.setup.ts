@@ -8,7 +8,10 @@ beforeAll(async () => {
   global.testRequest = testRequest;
 });
 
-afterEach(async () => {
+beforeEach(async () => {
   await resetDb();
 });
 
+// afterAll(async () => {
+//   await resetDb();
+// });

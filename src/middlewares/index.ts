@@ -28,13 +28,13 @@ async function setupMiddlewares(app: Express): Promise<ViteDevServer | undefined
 
   let vite;
   if (env === 'development') {
-    const { devConfig } = await import('../config/development.ts');
+    const { devConfig } = await import('./development.ts');
     vite = await devConfig(app, base);
   } else if (env === 'production') {
-    const { productionConfig } = await import('../config/production.ts');
+    const { productionConfig } = await import('./production.ts');
     productionConfig(app, base);
   } else {
-    const { testConfig } = await import('../config/test.ts');
+    const { testConfig } = await import('./test.ts');
     testConfig(app);
   }
 

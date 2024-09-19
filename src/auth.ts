@@ -54,9 +54,9 @@ export async function currentUser(req: Request, _res: Response, next: NextFuncti
   const cookieUserId = req.signedCookies.userId;
 
   if (sessionUserId) {
-    currentUser = await prisma.user.findFirst({ where: { id: sessionUserId } });
+    currentUser = await prisma.user.findUnique({ where: { id: sessionUserId } });
   } else if (cookieUserId) {
-    currentUser = await prisma.user.findFirst({ where: { id: cookieUserId } });
+    currentUser = await prisma.user.findUnique({ where: { id: cookieUserId } });
     const rememberToken = req.signedCookies.rememberToken;
     if (comparePassword(rememberToken, currentUser?.rememberDigest)) {
       req.session.userId = currentUser?.id;
@@ -66,6 +66,26 @@ export async function currentUser(req: Request, _res: Response, next: NextFuncti
   next();
 }
 
-export async function createUser(user: Prisma.UserCreateInput) {
-  return await prisma.user.create({ data: user });
+export function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  if (req.currentUser) {
+    next();
+  } else {
+    res.status(401).json({ error: "You don't have permission to access this resource" });
+  }
+}
+
+export async function findUserComments(user: Prisma.UserCreateInput) {
+  const comments = await prisma.comment.findMany({
+    // relationLoadStrategy: 'join',
+    where: {Post: {userId: user.id}},
+    // include:{comments: true},
+    // select: { comments: true }
+  });
+  // const comments = await prisma.$executeRaw`
+  // SELECT c.id FROM "Comment" c
+  // JOIN "Post" p ON c."postId" = p.id
+  // WHERE p."userId" = ${user.id}
+  // `
+  // const test = comments.flatMap((c) => c.comments);
+  console.log(comments);
 }

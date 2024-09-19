@@ -5,14 +5,15 @@ const prisma = new PrismaClient({
   log: ['query', 'info', 'warn', 'error']
 });
 
-type ModelNames = Uncapitalize<Prisma.ModelName>;
-
-const modelNames = Prisma.dmmf.datamodel.models.map((model) => model.name.toLowerCase() as ModelNames);
+const tables = Prisma.dmmf.datamodel.models.map((model) => model.name);
+const clearPostgres = async () => {
+  console.log('TABLES', tables);
+  await prisma.$transaction([...tables.map((table) => prisma.$executeRawUnsafe(`TRUNCATE "${table}" CASCADE;`))]);
+};
 
 export default async () => {
   if (process.env.NODE_ENV !== 'test' || process.env.ENV !== 'test') {
     throw new Error('environment is not test, aborting..');
   }
-  // @ts-expect-error because of model being union type i cannot use deleteMay
-  await prisma.$transaction(modelNames.map((model) => prisma[model].deleteMany()));
+  await clearPostgres();
 };

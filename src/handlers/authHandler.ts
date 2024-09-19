@@ -20,10 +20,7 @@ export async function login(req: Request, res: Response) {
     return;
   }
 
-  const testUsers = await prisma.user.count();
-  console.log('uers: ', testUsers);
-
-  const user = await prisma.user.findFirst({ where: { username: { equals: username } } });
+  const user = await prisma.user.findUnique({ where: { username: username } });
   if (!user) {
     res.status(400).send('username or password wrong');
     return;
@@ -46,6 +43,8 @@ export const registerValidator = validate([
   body('password', 'password cannot be empty').not().isEmpty(),
   body('password', 'password length must be greater than 8 characters').isLength({ min: 8 }),
   body('passwordRepeat', 'passwords do not match').custom((value, { req }) => value === req.body.password),
+
+  // not optimal this will do 2 trips to the database (one for the validation and one for the creation if validation succeeds)
   body('username', 'user with this username already exists').custom(async (value, { req }) => {
     const errors = validationResult(req);
     if (errors.isEmpty()) {
